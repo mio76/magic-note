@@ -1,0 +1,775 @@
+<!DOCTYPE html>
+<html lang="uk">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Magic Note</title>
+
+<link rel="manifest" href="manifest.json">
+
+    <style>
+    * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Segoe UI', Tahoma, Verdana, sans-serif;
+}
+
+:root {
+    --clr: #151A28;
+    --clr-text: #6699FF;
+    --clr-text-hover: #005fa3;
+    --eight: 8px;  
+    --br: 10px;  
+    --fs: 22px;
+}
+
+body {
+    display: flex;
+    justify-content: center;
+    min-height: 100vh;
+    background: var(--clr); 
+}
+
+.navigation {
+    position: fixed;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 400px;
+    height: 70px;
+    background: #fff;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border-radius: var(--br);
+}
+
+.navigation ul {
+    display: flex;
+    width: 350px;
+}
+
+.navigation ul li {
+    position: relative;
+    list-style: none;
+    width: 70px;
+    height: 70px;
+    z-index: 1;
+}
+
+.navigation ul li a {
+    display: flex;
+    position: relative;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    width: 100%;
+    text-align: center;    
+}
+
+.navigation ul li .icon {
+    position: relative;
+    display: block;
+    line-height: 75px;
+    font-size: 1.5em;
+    text-align: center;
+    transition: 0.5s;
+    color: var(--clr);
+}
+
+.navigation ul li.active .icon {
+    transform: translateY(-32px);
+}
+
+.navigation ul li a .text {
+    position: absolute;
+    color: var(--clr);
+    font-weight: 500;
+    font-size: 0.9em;
+    letter-spacing: 0.01em;
+    transition: 0.5s;
+    opacity: 0;
+    transform: translateY(20px);
+}
+
+.navigation ul li.active a .text {
+    opacity: 1;
+    transform: translateY(10px);
+}
+
+.indicator {
+    position: absolute;
+    top: -50%;   
+    border-radius: 50%;
+    background: #29fd53;
+    border: 6px solid var(--clr);
+    transition: 0.5s;  
+    width: 70px;
+    height: 70px;
+    display: flex;
+}
+
+.indicator::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    width: 20px;
+    height: 20px;
+    left: -22.1px;
+    background: transparent;
+    border-top-right-radius: 20px;
+    box-shadow: 1px -10px 0 0 var(--clr);
+}
+
+.indicator::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    width: 20px;
+    height: 20px;
+    right: -22.1px;
+    background: transparent;
+    border-top-left-radius: 20px;
+    box-shadow: -1px -10px 0 0 var(--clr);
+}
+
+.navigation ul li:nth-child(1).active ~ .indicator {
+    transform: translateX(calc(70px * 0));
+}
+
+.navigation ul li:nth-child(2).active ~ .indicator {
+    transform: translateX(calc(70px * 1));
+}
+.navigation ul li:nth-child(3).active ~ .indicator {
+    transform: translateX(calc(70px * 2));
+}
+.navigation ul li:nth-child(4).active ~ .indicator {
+    transform: translateX(calc(70px * 3));
+}
+.navigation ul li:nth-child(5).active ~ .indicator {
+    transform: translateX(calc(70px * 4));
+}
+
+.section {
+  display: none;
+  color: white;
+  font-size: 2em;
+  margin-top: 5px;
+  animation: fadeIn 0.5s ease-in-out; 
+}
+
+.section.active {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.content {
+  width: 100%;
+  padding-top: 20px; /* чтобы не перекрывалось меню */
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+}
+
+.notebook-wrapper {
+  width: 100%;
+  max-width: 400px;
+  margin: 2vh auto 100px auto;
+  padding: var(--eight);
+  box-sizing: border-box;
+  overflow: auto;
+}
+
+.notebook-wrapper textarea {
+  width: 100%;
+  height: 90px;
+  padding: var(--br);
+  font-size: var(--fs);
+  border-radius: var(--br);
+  resize: none;
+  background: transparent; 
+  color: var(--clr); 
+  border: none;
+  line-height: 1.2;
+  overflow: auto;
+}
+
+.notebook-wrapper button {
+  background-color: var(--clr-text);
+  color: white;
+  border: none;
+  padding: 8px 20px 8px 10px;
+  font-size: 16px;
+  border-radius: 15px 1px;
+  cursor: pointer;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+  margin-bottom: 15px;
+}
+
+.notebook-wrapper button:hover {
+  background-color: var(--clr-text-hover);
+}
+
+.note {
+  display: flex;
+  background: #ffffff;
+  border-radius: var(--br);
+  margin-top: var(--br); 
+}
+
+.note textarea {
+  width: 100%;
+  max-height: 300px;
+  font-size: var(--fs);
+  color: var(--clr);
+  transition: height 0.3s ease;
+  border: none;
+  padding: var(--eight);  
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch; /* для плавной прокрутки на мобильных */
+}
+
+.note textarea:focus {
+  outline: none;
+}
+
+.note button {
+  margin-top: auto;
+  background-color: transparent; 
+  width: 36px; 
+  height: 36px;
+  padding: var(--eight);
+  border-radius: var(--br);
+  cursor: pointer;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+}
+.note button:hover {
+  background-color: #e81123;
+}
+.note.expanded {
+  position: fixed;
+  top: 5px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100%;
+  max-width: 400px;
+  padding-bottom: var(--br);
+  z-index: 999;
+}
+
+.bottom-panel {
+  position: fixed;
+  bottom: -8px;
+  left: 50%;
+  transform: translateX(-50%) scale(1);
+  width: 400px;
+  height: 100px;
+  background: var(--clr);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border: none;
+  border-radius: 2px;
+  z-index: 1000;
+}
+
+@media (max-width: 420px) {
+  .bottom-panel {
+    transform: translateX(-50%) scale(0.95);
+  }
+}
+
+@media (max-width: 360px) {
+  .bottom-panel {
+    transform: translateX(-50%) scale(0.9);
+  }
+}
+
+.about-box {
+  position: relative;
+  color: white;
+  margin: 8vh auto;
+  max-width: 400px;
+  padding: 30px 40px;
+  text-align: center; 
+  line-height: 1.4;
+  font-size: 16px;
+}
+
+.button-group {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin: 20px auto 0 auto;
+  max-width: 400px;
+  position: relative;
+}
+
+.fancy-btn { 
+  background: var(--clr-text);
+  color: white;
+  border: none;
+  padding: 10px;
+  border-radius: var(--br);
+  font-size: var(--fs);
+  cursor: pointer;
+}
+
+.fancy-btn:hover {
+  background-color: var(--clr-text-hover);
+}
+
+h4 {
+color: var(--clr-text);
+}
+
+#color-panel {
+  max-width: 400px;
+  margin: 10px auto;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 15px;
+  }
+
+  .color-btn {
+    width: 60px;
+    height: 60px;
+    border: 2px solid #fff;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: transform 0.2s;
+  }
+
+  .color-label {
+    display: block;
+    font-size: 12px;
+    color: white;
+    margin-top: 4px;
+  }
+
+  #score-bar {
+  margin: 10px auto;
+  width: 90%;
+  max-width: 400px;
+  height: 25px;
+  border-radius: 15px;
+  overflow: hidden;
+  display: flex;
+  border: 1px solid #ccc;  
+}
+
+#result, #score {
+  text-align: center;
+  max-width: 400px;
+  margin: 5px auto;
+  font-size: var(--fs);
+  color: white;
+}
+
+  #miss-bar {
+    background: #fc1900;   
+  }
+
+  #miss-bar, #hit-bar {
+  height: 100%;
+  width: 0%;
+  transition: width 0.3s;
+}
+
+  #hit-bar {
+    background: #3498db;    
+  }
+
+  .color-btn:hover {
+    transform: scale(1.2);
+  }
+
+   .copilot-button {
+      background-color: #0078d4;
+      color: white;
+      border: none;
+      padding: 15px 30px;
+      font-size: 18px;
+      border-radius: var(--br);
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+
+    .copilot-button:hover {
+      background-color: #005ea2;
+    }
+
+p {
+  font-size: 18px; margin: 4vh auto;
+}
+
+
+</style>
+</head>
+
+<body>
+
+  <!-- 🔒 LOGO -->
+  <svg style="display: none;">
+    <symbol id="logo" viewBox="0 0 26.92 17.37" xmlns="http://www.w3.org/2000/svg">
+      <path fill="#69F" d="M0 11.53v.21l2.16-.01c-.39-.55-.75-.46-.44-1.3.17-.47.44-.99.69-1.34.44.77 1.05 2.54 1.4 2.93l1.43-3.08c.37.97 1.27 2.07.59 2.77l2.24.02c.31-.01.2.04.12-.32-.34-.04-2.18-3.54-1.56-3.93-.41-.49-1.11-.28-2.15-.3.54.65.23 1.43-.35 1.94l-.92-1.93-1.86-.01.61.7C1.54 9.11.83 10.86 0 11.53M15.52 11.7c1.68.28 2.27-.53 3.08.96l-.05-3.19-2.15.03c1.85 1.31-.93 2.99-1.07.32-.07-1.29.54-3.22 2.23-1.22l.61-1.42-2.47.05c-2.78.45-3.01 3.75-.18 4.47"/><path fill="#69F" d="M9.51 11.91c.1-1.3.3-1.3 1.18-2.15l-1.18.01.71-1.82c.59.59 1.34 2.46 1.34 3.27-.01.46-.19.19 0 .5h2.23c-.14-.26-2.32-4.09-1.7-4.22-.37-.48.22-.18-.68-.33-.35-.06-1.92 0-2.32.03l.34.36c-.18 1.68-2.25 2.95.08 4.35M22.39 10.71c.24.18 1.17.77 1.22.93 1.77.33 2.74-.2 3.31-1.31-4.27 3.29-3.69-3.54-1.57-2.44.16.15.54.58.71.69l.59-1.4-2.53.05c-1.53.39-2.83 1.73-1.73 3.48M19.27 11.72l2.29.01c-.53-.8-.79-3.74-.05-4.25-.37-.51-1.58-.31-2.18-.25.69.81.61 3.79-.06 4.49M13.44 7.57c-2.58-1.02-1.95-3.33.4-6.09-.48 3.74 3.18 3.31-.27 6.09 1.3-2.14.24-1.81-.31-3.36-1.54 2.22-.33 2.64.18 3.36M7.86 7.52l.15.5.49.15-.49.15-.15.49-.16-.49-.49-.15.49-.15zM12.16 1.49l.12.41.41.13-.41.12-.12.42-.13-.42-.41-.12.41-.13zM14.35 0l.12.41.41.13-.41.12-.12.41-.13-.41-.41-.12.41-.13zM15.2 2.8l.12.41.41.12-.41.13-.12.41-.13-.41-.41-.13.41-.12z"/><path fill="#fff" fill-rule="nonzero" d="M4.87 17.23v-3.82l2.39 2.16v-2.04h.82v3.84l-2.39-2.16v2.02zm6.95-.71c1.3 0 1.29-2.28 0-2.28-1.3 0-1.3 2.28 0 2.28m0-3.11c2.51 0 2.48 3.94 0 3.94-2.47 0-2.51-3.94 0-3.94m4.49 3.82V14.3h-1.18v-.77h3.23v.77h-1.17v2.93zm3.72 0v-3.7h2.27v.76h-1.42v.67h1.22v.76h-1.22v.73h1.45v.78z"/></svg>
+    </symbol>
+  </svg>
+
+   <div class="bottom-panel">
+    <div class="navigation">
+        <ul>
+            <li class="list active">
+                <a href="#">
+                    <span class="icon">
+                        <ion-icon name="home-outline"></ion-icon>
+                    </span>
+                    <span class="text">Записи</span>
+                </a>
+            </li>
+            <li class="list">
+                <a href="#">
+                    <span class="icon">
+                        <ion-icon name="game-controller-outline"></ion-icon>
+                    </span>
+                    <span class="text">Гра</span>
+                </a>
+            </li>
+            <li class="list">
+              <a href="#">
+                <span class="icon">
+                  <ion-icon name="person-outline"></ion-icon>
+                </span>
+                <span class="text">Про Note</span>
+              </a>
+            </li>
+            <li class="list">
+              <a href="#">
+                <span class="icon">
+                  <ion-icon name="chatbubble-outline"></ion-icon>
+                </span>
+                <span class="text">Чат</span>
+              </a>
+            </li>
+            <li class="list">
+              <a href="#">
+                <span class="icon">
+                  <ion-icon name="settings-outline"></ion-icon>
+                </span>
+                <span class="text">Сервіс</span>
+              </a>
+            </li>
+            <div class="indicator"></div>
+        </ul>
+    </div>
+</div>
+    
+<div class="content"> 
+  <div id="home" class="section">
+  <svg width="128" height="82">
+    <use href="#logo" />
+  </svg>
+    <div class="notebook-wrapper">
+      <div>
+        <textarea style="background: white;" id="newNote" placeholder="✍️ Напишіть нову замітку..."></textarea>
+        <button onclick="addNote()">➕ Додати запис</button>
+      </div>
+      <div id="notesContainer"></div>
+    </div>
+  </div>
+
+  <div id="profile" class="section">
+<svg width="128" height="82">
+    <use href="#logo" />
+  </svg>
+<h4>🎯 Вгадай колір</h4>
+  <h3 style="font-size: 18px; font-weight: 200;">Гра для тренування інтуїції</h3>
+  <div id="score-bar">
+  <div id="miss-bar"></div>
+  <div id="hit-bar"></div>  
+</div>
+<div id="result"></div>
+<div id="score" style="font-size: 15px;"></div>
+<div id="color-panel">
+  <div class="color-wrapper">
+    <button class="color-btn" data-color="red" style="background:red;"></button>
+    <span class="color-label">Червоний</span>
+  </div>
+  <div class="color-wrapper">
+    <button class="color-btn" data-color="blue" style="background:blue;"></button>
+    <span class="color-label">Синій</span>
+  </div>
+  <div class="color-wrapper">
+    <button class="color-btn" data-color="green" style="background:green;"></button>
+    <span class="color-label">Зелений</span>
+  </div>
+  <div class="color-wrapper">
+    <button class="color-btn" data-color="yellow" style="background:yellow;"></button>
+    <span class="color-label">Жовтий</span>
+  </div>
+  <div class="color-wrapper">
+    <button class="color-btn" data-color="purple" style="background:purple;"></button>
+    <span class="color-label">Фіолетовий</span>
+  </div>
+  <div class="color-wrapper">
+    <button class="color-btn" data-color="orange" style="background:orange;"></button>
+    <span class="color-label">Помаранчевий</span>
+  </div>
+  <div class="color-wrapper">
+    <button class="color-btn" data-color="pink" style="background:pink;"></button>
+    <span class="color-label">Рожевий</span>
+  </div>
+  <div class="color-wrapper">
+    <button class="color-btn" data-color="white" style="background:white;"></button>
+    <span class="color-label">Білий</span>
+  </div>
+</div>
+</div>
+  
+  <div id="chat" class="section" style="max-width: 400px; margin: 4vh auto;">
+    <h4>🧠 Мій ШІ-помічник</h4>
+    <p>Натисни кнопку нижче,<br>
+    щоб поспілкуватися з Copilot:</p>
+    <button class="copilot-button" onclick="window.open('https://copilot.microsoft.com/chats/fcVos5ixNSAQLnTEgoQZh', '_blank')">
+      💬 Відкрити Copilot
+    </button>
+  </div>
+
+  <div id="settings" class="section">
+    <svg width="128" height="82">
+    <use href="#logo" />
+  </svg>
+    <h4>Сервіс</h4>    
+    <div class="button-group">
+      <button class="fancy-btn" onclick="backupDB()">💾 Зробити резервну копію</button>
+      <input type="file" id="restoreFile" accept=".json" style="display:none" onchange="handleRestore(this.files[0])">
+      <button class="fancy-btn" onclick="document.getElementById('restoreFile').click()">📂 Відновити з файлу</button>
+    </div>
+    </div>
+    
+<div id="pro" class="section">
+<div class="about-box">
+   
+  <svg width="150" height="96">
+    <use href="#logo" />
+  </svg>
+    <h4 style="font-size: 20px; color: var(--clr-text);">
+      v1.0<br>
+      <br>
+      <br>
+    </h4>
+    Розробник: <br>
+    <h4 style="font-size: 30px; color:var(--clr-text);">
+      Овсієнко Ігор<br>
+    </h4>
+    © 2025<br>
+    Контакт: mio76@ukr.net
+  </div>
+</div>
+
+<script>  
+  const listItems = document.querySelectorAll('.list');
+  const sections = document.querySelectorAll('.section');
+  const sectionIds = ['home', 'profile', 'pro', 'chat', 'settings'];
+
+  listItems.forEach((item, index) => {
+    item.addEventListener('click', () => {
+      listItems.forEach(el => el.classList.remove('active'));
+      item.classList.add('active');
+      sections.forEach(section => section.style.display = 'none');
+      document.getElementById(sectionIds[index]).style.display = 'block';
+    });
+  });  
+
+  window.addEventListener('DOMContentLoaded', () => {
+    document.getElementById(sectionIds[0]).style.display = 'block';
+  });
+
+let notes = [],
+    dbName = "MagicNotesDB",
+    storeName = "notes";
+
+function openDB(cb) {
+  const r = indexedDB.open(dbName, 1);
+  r.onupgradeneeded = e => e.target.result.createObjectStore(storeName, { keyPath: "id" });
+  r.onsuccess = e => cb(e.target.result);
+}
+
+
+  function saveNotes() {
+  openDB(db => {
+    db.transaction(storeName, "readwrite")
+      .objectStore(storeName)
+      .put({ id: "main", content: notes });
+  });
+}
+
+  function loadNotes(callback) {
+  openDB(db => {
+    db.transaction(storeName, "readonly")
+      .objectStore(storeName)
+      .get("main").onsuccess = ({ target }) => {
+        notes = target.result?.content ?? [];
+        callback();
+      };
+  });
+}
+  function renderNotes() {
+  const container = document.getElementById('notesContainer');
+  container.innerHTML = '';
+
+  notes.forEach((note, index) => {
+    const noteDiv = document.createElement('div');
+    noteDiv.className = 'note';
+    noteDiv.style.backgroundColor = note.color || '#f0f0f0';
+
+    const textarea = document.createElement('textarea');
+    textarea.value = note.text;
+
+    textarea.addEventListener('input', () => {
+      textarea.style.height = 'auto';
+      textarea.style.height = textarea.scrollHeight + 'px';
+    });
+
+   textarea.onfocus = () => {
+  noteDiv.classList.add('expanded');
+  textarea.style.height = textarea.scrollHeight + 'px';
+};
+
+textarea.onblur = () => {
+  noteDiv.classList.remove('expanded');
+  textarea.style.height = '90px';
+
+  const updatedNote = {
+    text: textarea.value,
+    color: note.color
+  };
+  notes.splice(index, 1);
+  notes.unshift(updatedNote);
+  saveNotes();
+  renderNotes();
+};   
+
+  const deleteBtn = Object.assign(document.createElement('button'), {
+  textContent: '🗑️',
+  onclick: () => {
+    if (confirm('Ви впевнені, що хочете видалити цей нотаток?')) {
+      notes.splice(index, 1);
+      saveNotes();
+      renderNotes();
+    }
+  }
+});
+    noteDiv.appendChild(textarea);
+    noteDiv.appendChild(deleteBtn);
+    container.appendChild(noteDiv);
+  });
+}
+
+function getRandomColor() {
+  const colors = ['#FFCCCC', '#FFFFCC', '#FFCCFF', '#CCFF99', '#99CCFF', '#FFCC99', '#CCCCFF', '#FFFFFF'];
+  return colors[Math.floor(Math.random() * colors.length)];
+}
+  function addNote() {
+  const input = document.getElementById('newNote');
+  const text = input.value.trim();
+  if (!text) return;
+
+  notes.unshift({ text, color: getRandomColor() });
+  input.value = '';
+  saveNotes();
+  renderNotes();
+}
+
+window.onload = () => {
+  loadNotes(renderNotes);
+};
+
+
+async function backupDB() {
+  indexedDB.open("MagicNotesDB").onsuccess = ({ target }) => {
+    target.result
+      .transaction("notes", "readonly")
+      .objectStore("notes")
+      .getAll().onsuccess = ({ target }) => {
+        const blob = new Blob([JSON.stringify(target.result)], { type: "application/json" });
+        const timestamp = new Date().toISOString().replace(/[:]/g, "-").split(".")[0];
+        const a = Object.assign(document.createElement("a"), {
+          href: URL.createObjectURL(blob),
+          download: `MagicNotesBackup_${timestamp}.json`
+        });
+        a.click();
+        URL.revokeObjectURL(a.href);
+      };
+  };
+}
+
+function handleRestore(file) {
+  const reader = new FileReader();
+  reader.onload = function () {
+    const notes = JSON.parse(reader.result);
+    const request = indexedDB.open("MagicNotesDB");
+
+    request.onsuccess = function (event) {
+      const db = event.target.result;
+      const tx = db.transaction("notes", "readwrite");
+      const store = tx.objectStore("notes");
+
+      notes.forEach(note => {
+        store.put(note); 
+      });
+
+      alert("✅ Восстановление завершено!");
+    };
+  };
+  reader.readAsText(file);
+}
+
+const colors = ["red", "blue", "green", "yellow", "purple", "orange", "pink", "white"];
+let correct = 0, wrong = 0;
+
+const hit = document.getElementById("hit-bar");
+const miss = document.getElementById("miss-bar");
+const result = document.getElementById("result");
+const score = document.getElementById("score");
+
+function update() {
+  const total = correct + wrong;
+  const percent = total ? (correct / total) * 100 : 0;
+  hit.style.width = `${percent}%`;
+  miss.style.width = `${100 - percent}%`;
+}
+
+document.querySelectorAll(".color-btn").forEach(btn =>
+  btn.onclick = () => {
+    const guess = btn.dataset.color;
+    const actual = colors[Math.random() * colors.length | 0];
+    const success = guess === actual;
+
+    success ? correct++ : wrong++;
+    result.innerHTML = `${success ? "✅ Ви вгадали!" : "❌ Не вгадали."} Колір був: <span style="color:${actual};font-weight:bold;">${actual}</span>`;
+    score.textContent = `Вгадано: ${correct} | Промахів: ${wrong}`;
+    update();
+  }
+);
+
+/*Установка как программа*/
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('/magic-note/sw.js')
+    .then(() => console.log('SW зарегистрирован'))
+    .catch(error => console.error('Ошибка регистрации SW:', error));
+}
+
+</script>
+<script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
+<script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
+
+</body>
+</html>
